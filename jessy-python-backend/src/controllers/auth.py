@@ -41,3 +41,18 @@ async def signin(email: str, password: str, response: Response, db: AsyncSession
     response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, max_age=7 * 24 * 60 * 60)
 
     return {"message": "Sign-in successful", "user": {"id": user.id, "email": user.email, "role": user.role}}
+
+# Email verification function
+async def verify_email(email: str, otp: str, db: AsyncSession = Depends(get_db)):
+    # Placeholder implementation
+    return {"message": "Email verification endpoint - implementation needed"}
+
+# Resend email verification OTP function
+async def resend_email_verification_otp(email: str, db: AsyncSession = Depends(get_db)):
+    # Placeholder implementation
+    return {"message": "Resend OTP endpoint - implementation needed"}
+
+# Request password reset function
+async def request_password_reset(email: str, db: AsyncSession = Depends(get_db)):
+    # Placeholder implementation
+    return {"message": "Password reset request endpoint - implementation needed"}

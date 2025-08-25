@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Enum, DateTime, Date, func 
+from sqlalchemy import Column, String, DateTime, Date, func 
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declarative_base
 from passlib.context import CryptContext
@@ -12,9 +12,9 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, nullable=False)
-    username = Column(String(255), unique=True, nullable=False)
+    username = Column(String(255), unique=True, nullable=True)  # Made nullable since it's not always provided
     password_hash = Column(String(255), nullable=False)
-    role = Column(Enum("primary_user", "caregiver", name="user_roles"), nullable=False)
+    role = Column(String(50), nullable=False, default="user")
     full_name = Column(String(255), nullable=True)
     email = Column(String(255), unique=True, nullable=True)
     phone = Column(String(20), nullable=True)
