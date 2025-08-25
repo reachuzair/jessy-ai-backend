@@ -8,6 +8,7 @@ import logging
 
 logger = logging.getLogger("auth")
 
+#signup function that checks for already existing user as well
 async def signup(email: str, password: str, db: AsyncSession = Depends(get_db)):
     if not email or not password:
         raise HTTPException(status_code=400, detail="Email and password are required")
@@ -23,6 +24,7 @@ async def signup(email: str, password: str, db: AsyncSession = Depends(get_db)):
     await db.commit()
     return {"message": "User created successfully", "user": {"id": new_user.id, "email": new_user.email, "role": new_user.role}}
 
+#sign in function
 async def signin(email: str, password: str, response: Response, db: AsyncSession = Depends(get_db)):
     if not email or not password:
         raise HTTPException(status_code=400, detail="Email and password are required")
