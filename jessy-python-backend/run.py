@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Simple launcher script for the FastAPI backend.
+Launcher script for the FastAPI backend.
 Run this from anywhere to start the server.
 """
 
