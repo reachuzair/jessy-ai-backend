@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from src.controllers.auth import signup, signin, verify_email, resend_email_verification_otp, request_password_reset
+from src.controllers.auth_controller import signup, signin, verify_email, resend_email_verification_otp, request_password_reset
 
 router = APIRouter()
 
