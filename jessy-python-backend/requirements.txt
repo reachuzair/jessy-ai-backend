@@ -7,4 +7,10 @@ python-dotenv
 passlib
 PyJWT
 bcrypt
-
+google-generativeai
+requests
+pydantic
+python-multipart
+aiohttp
+assemblyai 
+pyaudio
