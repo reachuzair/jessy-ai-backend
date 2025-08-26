@@ -8,15 +8,6 @@ from src.utils.piper_service import piper_tts_service
 
 router = APIRouter()
 
-@router.post("/chat", response_model=ChatResponse)
-async def chat_with_ai(request: ChatRequest):
-    try:
-        response = await ai_chat_controller.chat_with_ai(request)
-        return response
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/chat/health")
 async def get_ai_health():
