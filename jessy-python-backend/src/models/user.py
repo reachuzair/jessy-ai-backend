@@ -2,6 +2,7 @@ from sqlalchemy import Column, String, DateTime, Date, func, Boolean
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declarative_base
 from passlib.context import CryptContext
+from datetime import timedelta, datetime
 import uuid
 
 Base = declarative_base()
@@ -23,6 +24,8 @@ class User(Base):
     email_verification_otp_expires_at = Column(DateTime(timezone=True), nullable=True)
     password_reset_otp = Column(String(255), nullable=True)  # Increased for bcrypt hash
     password_reset_otp_expires_at = Column(DateTime(timezone=True), nullable=True)
+    refresh_token_hash = Column(String(255), nullable=True)
+    refresh_token_expires_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     last_login = Column(Date, nullable=True)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
@@ -32,3 +35,21 @@ class User(Base):
 
     def hash_password(self, plain_password: str):
         self.password_hash = pwd_context.hash(plain_password)
+
+    def set_refresh_token(self, refresh_token: str):
+        """Store hashed refresh token in database"""
+        self.refresh_token_hash = pwd_context.hash(refresh_token)
+        self.refresh_token_expires_at = datetime.utcnow() + timedelta(days=7)
+
+    def verify_refresh_token(self, refresh_token: str) -> bool:
+        """Verify refresh token against stored hash"""
+        if not self.refresh_token_hash or not self.refresh_token_expires_at:
+            return False
+        if datetime.utcnow() > self.refresh_token_expires_at:
+            return False
+        return pwd_context.verify(refresh_token, self.refresh_token_hash)
+
+    def invalidate_refresh_token(self):
+        """Invalidate the current refresh token"""
+        self.refresh_token_hash = None
+        self.refresh_token_expires_at = None

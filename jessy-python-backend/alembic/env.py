@@ -1,6 +1,10 @@
 from logging.config import fileConfig
 import sys
 import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Add the src directory to the Python path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
@@ -12,10 +16,23 @@ from alembic import context
 
 # Import our models
 from models.user import Base
+from models.token_blacklist import TokenBlacklist  # Import the new model
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
+
+# Set database URL from environment variables
+DB_USER = os.getenv('DB_USER', 'postgres')
+DB_PASSWORD = os.getenv('DB_PASSWORD', 'password')
+DB_HOST = os.getenv('DB_HOST', 'localhost')
+DB_PORT = os.getenv('DB_PORT', '5432')
+DB_NAME = os.getenv('DB_NAME', 'jessy_ai')
+
+config.set_main_option(
+    'sqlalchemy.url',
+    f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
+)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.

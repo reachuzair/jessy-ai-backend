@@ -1,4 +1,4 @@
-from fastapi import HTTPException, Depends, Response
+from fastapi import HTTPException, Depends, Response, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from src.models.user import User
@@ -71,6 +71,11 @@ async def signin(email: str, password: str, response: Response, db: AsyncSession
 
     access_token = generate_access_token(user)
     refresh_token = generate_refresh_token(user)
+
+    # Store refresh token in database
+    user.set_refresh_token(refresh_token)
+    user.last_login = datetime.now().date()
+    await db.commit()
 
     response.set_cookie(key="access_token", value=access_token, httponly=True, max_age=6 * 60 * 60)
     response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, max_age=7 * 24 * 60 * 60)
@@ -199,3 +204,58 @@ async def reset_password(email: str, otp: str, new_password: str, db: AsyncSessi
     await db.commit()
 
     return {"message": "Password reset successfully"}
+
+# Logout function with token blacklisting
+async def logout(request: Request, response: Response, db: AsyncSession = Depends(get_db)):
+    access_token = request.cookies.get("access_token")
+    refresh_token = request.cookies.get("refresh_token")
+    
+    # Clear cookies
+    response.delete_cookie("access_token")
+    response.delete_cookie("refresh_token")
+    
+    # Blacklist tokens if they exist
+    if access_token:
+        try:
+            from src.utils.jwt import verify_token, blacklist_token
+            decoded_access = verify_token(access_token)
+            access_jti = decoded_access.get("jti", "")
+            access_exp = datetime.fromtimestamp(decoded_access.get("exp", 0))
+            user_id = decoded_access.get("id", "")
+            await blacklist_token(access_jti, "access", user_id, access_exp, db)
+        except Exception as e:
+            logger.warning(f"Failed to blacklist access token: {e}")
+    
+    if refresh_token:
+        try:
+            from src.utils.jwt import verify_token, blacklist_token
+            decoded_refresh = verify_token(refresh_token)
+            refresh_jti = decoded_refresh.get("jti", "")
+            refresh_exp = datetime.fromtimestamp(decoded_refresh.get("exp", 0))
+            user_id = decoded_refresh.get("id", "")
+            await blacklist_token(refresh_jti, "refresh", user_id, refresh_exp, db)
+            
+            # Invalidate refresh token in user record
+            result = await db.execute(select(User).where(User.id == user_id))
+            user = result.scalars().first()
+            if user:
+                user.invalidate_refresh_token()
+                await db.commit()
+        except Exception as e:
+            logger.warning(f"Failed to blacklist refresh token: {e}")
+    
+    return {"message": "Logged out successfully"}
+
+# Function to revoke all user tokens (useful for security incidents)
+async def revoke_all_user_tokens(user_id: str, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalars().first()
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Invalidate refresh token in database
+    user.invalidate_refresh_token()
+    await db.commit()
+    
+    return {"message": "All user tokens have been revoked"}
