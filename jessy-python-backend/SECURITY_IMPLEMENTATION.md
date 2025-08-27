@@ -135,7 +135,7 @@ pip install -r requirements.txt
 ✅ **Request Tracing** - Request IDs for debugging
 ✅ **Environment-Based Security** - Different configs for dev/prod
 
-## Additional Features Required (Milestone 1 Completion)
+## Security-related Features Required 
 
 ### 1. Email Verification System
 - **Route**: `POST /auth/verify-email`
