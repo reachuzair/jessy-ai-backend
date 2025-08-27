@@ -9,16 +9,18 @@ import logging
 logger = logging.getLogger("auth")
 
 #signup function that checks for already existing user as well
-async def signup(email: str, password: str, db: AsyncSession = Depends(get_db)):
+async def signup(email: str, password: str, username: str, full_name: str, db: AsyncSession = Depends(get_db)):
     if not email or not password:
         raise HTTPException(status_code=400, detail="Email and password are required")
 
+    #check if user already exists
     result = await db.execute(select(User).where(User.email == email))
     existing_user = result.scalars().first()
     if existing_user:
         raise HTTPException(status_code=400, detail="User already exists with this email")
 
-    new_user = User(email=email, role="user")
+    #else create new user
+    new_user = User(email=email, role="user", username=username, full_name=full_name)
     new_user.hash_password(password)
     db.add(new_user)
     await db.commit()

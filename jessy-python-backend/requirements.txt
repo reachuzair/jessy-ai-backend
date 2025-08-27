@@ -14,3 +14,8 @@ python-multipart
 aiohttp
 assemblyai 
 pyaudio
+slowapi
+redis
+email-validator
+fastapi-cors
+cle
