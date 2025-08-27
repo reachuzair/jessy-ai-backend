@@ -127,15 +127,8 @@ pip install -r requirements.txt
 | Voice Processing | 10/minute | Voice endpoints (when implemented) |
 | General API | 60/minute | Other API endpoints |
 
-## 🔒 Security Benefits
 
-✅ **DDoS Protection** - Rate limiting prevents abuse
-✅ **Information Disclosure Prevention** - Consistent error responses
-✅ **Cross-Origin Request Security** - Properly configured CORS
-✅ **Request Tracing** - Request IDs for debugging
-✅ **Environment-Based Security** - Different configs for dev/prod
-
-## Security-related Features Required 
+## Additional Features Required (Milestone 1 Completion)
 
 ### 1. Email Verification System
 - **Route**: `POST /auth/verify-email`
@@ -170,4 +163,18 @@ pip install -r requirements.txt
 - Add user-initiated token revocation
 - Track token usage patterns
 
+## Security Benefits
 
+**Core Security Features:**
+- DDoS Protection - Rate limiting prevents abuse
+- Information Disclosure Prevention - Consistent error responses
+- Cross-Origin Request Security - Properly configured CORS
+- Request Tracing - Request IDs for debugging
+- Environment-Based Security - Different configs for dev/prod
+
+**Authentication Security:**
+- Email Ownership Verification - Prevents account takeover with unverified emails
+- OTP Time-Based Security - 15-minute expiration prevents replay attacks
+- Secure Password Recovery - Token-based reset system prevents unauthorized access
+- Token Rotation Security - Fresh tokens on each use prevent token reuse attacks
+- Session Invalidation - Global logout capability for compromised accounts
