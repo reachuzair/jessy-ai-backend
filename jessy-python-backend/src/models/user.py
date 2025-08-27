@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, DateTime, Date, func 
+from sqlalchemy import Column, String, DateTime, Date, func, Boolean 
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declarative_base
 from passlib.context import CryptContext
@@ -18,6 +18,11 @@ class User(Base):
     full_name = Column(String(255), nullable=True)
     email = Column(String(255), unique=True, nullable=True)
     phone = Column(String(20), nullable=True)
+    is_email_verified = Column(Boolean, default=False, nullable=False)
+    email_verification_otp = Column(String(255), nullable=True)  # Increased for bcrypt hash
+    email_verification_otp_expires_at = Column(DateTime(timezone=True), nullable=True)
+    password_reset_otp = Column(String(255), nullable=True)  # Increased for bcrypt hash
+    password_reset_otp_expires_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     last_login = Column(Date, nullable=True)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
