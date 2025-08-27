@@ -42,6 +42,14 @@ This document outlines the security features implemented in the Jessy AI Python 
   - Security validation warnings
   - Development vs production mode detection
 
+### 5. Password and OTP Security
+- **Location**: `src/utils/security.py`
+- **Features**:
+  - Proper password hashing using bcrypt
+  - Secure OTP generation and hashing
+  - Salt-based hashing for enhanced security
+  - Constant-time comparison for hash verification
+
 ## 🔧 Integration Changes
 
 ### Updated Files:
@@ -67,6 +75,7 @@ Create a `.env` file with:
 ENVIRONMENT=development
 DEBUG_MODE=true
 JWT_SECRET=your_super_secure_secret_here
+JWT_REFRESH_SECRET=your_separate_refresh_secret_here
 
 # CORS Configuration
 CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001
@@ -77,6 +86,16 @@ REDIS_URL=redis://localhost:6379
 
 # Database
 DATABASE_URL=postgresql+asyncpg://user:password@localhost/dbname
+
+# Email Configuration (for OTP verification)
+SMTP_SERVER=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=your_email@gmail.com
+SMTP_PASSWORD=your_app_password
+FROM_EMAIL=noreply@jessy-ai.com
+
+# OTP Configuration
+OTP_EXPIRATION_MINUTES=15
 ```
 
 ### Install Dependencies
@@ -103,7 +122,8 @@ pip install -r requirements.txt
 | Endpoint Type | Rate Limit | Applied To |
 |---------------|------------|------------|
 | Authentication | 5/minute | `/auth/signin`, `/auth/signup`, `/auth/request-password-reset` |
-| Public | 100/minute | `/auth/verify-email` |
+| Email Verification | 3/minute | `/auth/verify-email`, `/auth/resend-email-verification-otp` |
+| Public | 100/minute | General public endpoints |
 | Voice Processing | 10/minute | Voice endpoints (when implemented) |
 | General API | 60/minute | Other API endpoints |
 
@@ -115,32 +135,39 @@ pip install -r requirements.txt
 ✅ **Request Tracing** - Request IDs for debugging
 ✅ **Environment-Based Security** - Different configs for dev/prod
 
-## ⚠️ Still Needs Implementation
+## Additional Features Required (Milestone 1 Completion)
 
-- Input validation (Pydantic models for auth endpoints)
-- User model security fixes (email normalization, password hiding)
-- JWT token rotation and security improvements
-- Database migrations system
-- Email verification implementation
-- Password reset implementation
+### 1. Email Verification System
+- **Route**: `POST /auth/verify-email`
+- Build backend API for email verification
+- Implement proper OTP expiration (15 minutes)
+- Validate OTP format and user association
+- Update user verification status in database
 
-## 🧪 Testing the Implementation
+### 2. Email Verification OTP Resending
+- **Route**: `POST /auth/resend-email-verification-otp`
+- Build backend API for resending email verification OTP
+- Check if user exists and is not already verified
+- Generate new OTP and invalidate previous ones
+- Send email with new OTP
 
-Run the server and test:
-```bash
-# Start the server
-python run.py
+### 3. Password Reset System
+- **Route**: `POST /auth/request-password-reset`
+- Build backend API for password reset
+- Generate secure password reset tokens
+- Send password reset email with token
+- Implement token expiration (15 minutes)
 
-# Test health check
-curl http://localhost:8003/health
+### 4. Refresh Token Security Improvements
+- Store refresh tokens safely in database with associations
+- Rotate refresh tokens when used (generate new on each refresh)
+- Use separate JWT secret for refresh tokens
+- Implement token versioning for global invalidation
 
-# Test rate limiting (run multiple times quickly)
-curl http://localhost:8003/security-test
+### 5. Token Security Enhancements
+- Add a way to block old or unsafe tokens
+- Implement token blacklisting mechanism
+- Add user-initiated token revocation
+- Track token usage patterns
 
-# Test auth rate limiting
-curl -X POST http://localhost:8003/auth/signup \
-  -H "Content-Type: application/json" \
-  -d '{"email": "test@example.com", "password": "password123"}'
-```
 
-The security implementation provides a solid foundation for the authentication system while maintaining flexibility for future enhancements.
