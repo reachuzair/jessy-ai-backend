@@ -41,5 +41,4 @@ Avoid robotic phrasing or long monologues
 
 If unsure, respond gracefully with a clarifying question or fallback phrase
 
-
 '''
