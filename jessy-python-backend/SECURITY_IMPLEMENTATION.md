@@ -95,7 +95,7 @@ SMTP_PASSWORD=your_app_password
 FROM_EMAIL=noreply@jessy-ai.com
 
 # OTP Configuration
-OTP_EXPIRATION_MINUTES=15
+OTP_EXPIRATION_MINUTES=10
 ```
 
 ### Install Dependencies
@@ -133,7 +133,7 @@ pip install -r requirements.txt
 ### 1. Email Verification System
 - **Route**: `POST /auth/verify-email`
 - Build backend API for email verification
-- Implement proper OTP expiration (15 minutes)
+- Implement proper OTP expiration (10 minutes)
 - Validate OTP format and user association
 - Update user verification status in database
 
@@ -149,7 +149,7 @@ pip install -r requirements.txt
 - Build backend API for password reset
 - Generate secure password reset tokens
 - Send password reset email with token
-- Implement token expiration (15 minutes)
+- Implement token expiration (10 minutes)
 
 ### 4. Refresh Token Security Improvements
 - Store refresh tokens safely in database with associations
@@ -174,7 +174,7 @@ pip install -r requirements.txt
 
 **Authentication Security:**
 - Email Ownership Verification - Prevents account takeover with unverified emails
-- OTP Time-Based Security - 15-minute expiration prevents replay attacks
+- OTP Time-Based Security - 10-minute expiration prevents replay attacks
 - Secure Password Recovery - Token-based reset system prevents unauthorized access
 - Token Rotation Security - Fresh tokens on each use prevent token reuse attacks
 - Session Invalidation - Global logout capability for compromised accounts
