@@ -16,7 +16,7 @@ class VoiceChatRequest(BaseModel):
 class VoiceChatResponse(BaseModel):
     transcribed_text: str
     ai_response: str
-    # voice_data: Optional[str] = None
+    voice_data: Optional[str] = None
     voice_format: Optional[str] = None
     voice_filename: Optional[str] = None
     success: bool = True

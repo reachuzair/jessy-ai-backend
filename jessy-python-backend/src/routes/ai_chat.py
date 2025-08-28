@@ -8,6 +8,15 @@ from src.utils.piper_service import piper_tts_service
 
 router = APIRouter()
 
+@router.post("/chat", response_model=ChatResponse)
+async def chat_with_ai(request: ChatRequest):
+    try:
+        response = await ai_chat_controller.chat_with_ai(request)
+        return response
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/chat/health")
 async def get_ai_health():
@@ -33,32 +42,18 @@ async def chat_text_only(
 @router.get("/chat/voice-simple")
 async def chat_with_voice_simple(
     message: str = Query(..., description="Text message to send to AI"),
-    voice_format: str = Query("wav", description="Audio format: wav, mp3, flac"),
-    language: str = Query("english", description="Language for voice synthesis: english, spanish")
+    voice_format: str = Query("wav", description="Audio format: wav, mp3, flac")
 ):
     try:
         request = ChatRequest(
             message=message, 
             include_voice=True, 
-            voice_format=voice_format,
-            language=language
+            voice_format=voice_format
         )
         response = await ai_chat_controller.chat_with_ai(request)
         return response
     except HTTPException:
         raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@router.get("/voice/languages")
-async def get_available_languages():
-    """Get list of available languages for voice synthesis"""
-    try:
-        languages = piper_tts_service.get_available_languages()
-        return {
-            "available_languages": languages,
-            "total_languages": len(languages)
-        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

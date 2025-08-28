@@ -13,11 +13,11 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, nullable=False)
-    username = Column(String(255), unique=True, nullable=True)  # Made nullable since it's not always provided
+    username = Column(String(255), unique=True, nullable=False)  # Made nullable since it's not always provided
     password_hash = Column(String(255), nullable=False)
     role = Column(String(50), nullable=False, default="user")
-    full_name = Column(String(255), nullable=True)
-    email = Column(String(255), unique=True, nullable=True)
+    full_name = Column(String(255), nullable=False)
+    email = Column(String(255), unique=True, nullable=False)
     phone = Column(String(20), nullable=True)
     is_email_verified = Column(Boolean, default=False, nullable=False)
     email_verification_otp = Column(String(255), nullable=True)  # Increased for bcrypt hash

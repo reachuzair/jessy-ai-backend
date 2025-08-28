@@ -8,7 +8,6 @@ class ChatRequest(BaseModel):
     message: str
     include_voice: bool = True
     voice_format: str = "wav"
-    language: str = "english"  # New field for language selection
 
 class ChatResponse(BaseModel):
     message: str
@@ -18,8 +17,6 @@ class ChatResponse(BaseModel):
     voice_filename: Optional[str] = None
     voice_file_path: Optional[str] = None
     voice_file_size: Optional[int] = None
-    language: Optional[str] = None  # New field to return the language used
-    model_used: Optional[str] = None  # New field to return the model used
     success: bool = True
     error: Optional[str] = None
 
@@ -51,8 +48,6 @@ class AIChatController:
             voice_filename = None
             voice_file_path = None
             voice_file_size = None
-            language = None
-            model_used = None
             
             if request.include_voice:
                 supported_formats = piper_tts_service.get_supported_formats()
@@ -62,19 +57,9 @@ class AIChatController:
                         detail=f"Unsupported voice format. Supported: {supported_formats}"
                     )
                 
-                # Validate language
-                available_languages = piper_tts_service.get_available_languages()
-                if not any(lang["language"] == request.language.lower() for lang in available_languages):
-                    available_lang_names = [lang["language"] for lang in available_languages]
-                    raise HTTPException(
-                        status_code=400,
-                        detail=f"Unsupported language '{request.language}'. Available languages: {available_lang_names}"
-                    )
-                
                 voice_result = await piper_tts_service.text_to_speech(
                     ai_response, 
-                    request.voice_format,
-                    request.language
+                    request.voice_format
                 )
                 
                 if voice_result:
@@ -83,8 +68,6 @@ class AIChatController:
                     voice_filename = voice_result["filename"]
                     voice_file_path = voice_result["file_path"]
                     voice_file_size = voice_result["file_size"]
-                    language = voice_result["language"]
-                    model_used = voice_result["model_used"]
                 else:
                     print("Warning: Voice synthesis failed, returning text only")
             
@@ -96,8 +79,6 @@ class AIChatController:
                 voice_filename=voice_filename,
                 voice_file_path=voice_file_path,
                 voice_file_size=voice_file_size,
-                language=language,
-                model_used=model_used,
                 success=True
             )
             
@@ -116,8 +97,7 @@ class AIChatController:
         return {
             "gemini_configured": gemini_service.is_configured(),
             "piper_configured": piper_tts_service.is_configured(),
-            "supported_voice_formats": piper_tts_service.get_supported_formats(),
-            "available_languages": piper_tts_service.get_available_languages()
+            "supported_voice_formats": piper_tts_service.get_supported_formats()
         }
 
 ai_chat_controller = AIChatController()

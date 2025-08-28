@@ -12,7 +12,7 @@ import logging
 logger = logging.getLogger("auth")
 
 #signup function that checks for already existing user as well
-async def signup(email: str, password: str, db: AsyncSession = Depends(get_db)):
+async def signup(email: str, password: str, username: str, full_name: str, db: AsyncSession):
     if not email or not password:
         raise HTTPException(status_code=400, detail="Email and password are required")
 
@@ -27,7 +27,9 @@ async def signup(email: str, password: str, db: AsyncSession = Depends(get_db)):
     otp_expiry = otp_service.get_otp_expiry()
 
     new_user = User(
-        email=email, 
+        email=email,
+        username=username,
+        full_name=full_name,
         role="user",
         is_email_verified=False,
         email_verification_otp=otp_hash,  # Store hashed OTP
@@ -53,7 +55,7 @@ async def signup(email: str, password: str, db: AsyncSession = Depends(get_db)):
     }
 
 #sign in function
-async def signin(email: str, password: str, response: Response, db: AsyncSession = Depends(get_db)):
+async def signin(email: str, password: str, response: Response, db: AsyncSession):
     if not email or not password:
         raise HTTPException(status_code=400, detail="Email and password are required")
 
@@ -83,7 +85,7 @@ async def signin(email: str, password: str, response: Response, db: AsyncSession
     return {"message": "Sign-in successful", "user": {"id": user.id, "email": user.email, "role": user.role}}
 
 # Email verification function
-async def verify_email(email: str, otp: str, db: AsyncSession = Depends(get_db)):
+async def verify_email(email: str, otp: str, db: AsyncSession):
     if not email or not otp:
         raise HTTPException(status_code=400, detail="Email and OTP are required")
 
@@ -116,7 +118,7 @@ async def verify_email(email: str, otp: str, db: AsyncSession = Depends(get_db))
     }
 
 # Resend email verification OTP function
-async def resend_email_verification_otp(email: str, db: AsyncSession = Depends(get_db)):
+async def resend_email_verification_otp(email: str, db: AsyncSession):
     if not email:
         raise HTTPException(status_code=400, detail="Email is required")
 
@@ -147,7 +149,7 @@ async def resend_email_verification_otp(email: str, db: AsyncSession = Depends(g
     return {"message": "Verification code sent successfully"}
 
 # Request password reset function
-async def request_password_reset(email: str, db: AsyncSession = Depends(get_db)):
+async def request_password_reset(email: str, db: AsyncSession):
     if not email:
         raise HTTPException(status_code=400, detail="Email is required")
 
@@ -179,7 +181,7 @@ async def request_password_reset(email: str, db: AsyncSession = Depends(get_db))
     return {"message": "If an account with this email exists, a password reset code has been sent"}
 
 # Reset password function
-async def reset_password(email: str, otp: str, new_password: str, db: AsyncSession = Depends(get_db)):
+async def reset_password(email: str, otp: str, new_password: str, db: AsyncSession):
     if not email or not otp or not new_password:
         raise HTTPException(status_code=400, detail="Email, OTP, and new password are required")
 
@@ -206,7 +208,7 @@ async def reset_password(email: str, otp: str, new_password: str, db: AsyncSessi
     return {"message": "Password reset successfully"}
 
 # Logout function with token blacklisting
-async def logout(request: Request, response: Response, db: AsyncSession = Depends(get_db)):
+async def logout(request: Request, response: Response, db: AsyncSession):
     access_token = request.cookies.get("access_token")
     refresh_token = request.cookies.get("refresh_token")
     
@@ -247,7 +249,7 @@ async def logout(request: Request, response: Response, db: AsyncSession = Depend
     return {"message": "Logged out successfully"}
 
 # Function to revoke all user tokens (useful for security incidents)
-async def revoke_all_user_tokens(user_id: str, db: AsyncSession = Depends(get_db)):
+async def revoke_all_user_tokens(user_id: str, db: AsyncSession):
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalars().first()
     
