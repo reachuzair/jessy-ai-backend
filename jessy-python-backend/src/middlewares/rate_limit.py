@@ -18,11 +18,23 @@ logger = logging.getLogger("rate_limit")
 # Redis connection for rate limiting
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
 
+async def test_redis_connection():
+    """Test Redis connection during startup"""
+    try:
+        test_client = redis.from_url(REDIS_URL, decode_responses=True)
+        await test_client.ping()
+        await test_client.aclose()
+        return True
+    except Exception as e:
+        logger.warning(f"Redis connection failed: {e}. Rate limiting will use in-memory storage.")
+        return False
+
+# Initialize (connection will be tested when actually used)
 try:
     redis_client = redis.from_url(REDIS_URL, decode_responses=True)
-    print(f"Redis connection successful")
+    print(f"Redis client initialized (connection will be tested on first use)")
 except Exception as e:
-    logger.warning(f"Redis connection failed: {e}. Rate limiting will use in-memory storage.")
+    logger.warning(f"Redis client initialization failed: {e}. Rate limiting will use in-memory storage.")
     redis_client = None
 
 #rate limiting is being done per IP address
@@ -90,13 +102,15 @@ def public_rate_limit():
 async def check_redis_health() -> bool:
     """Check if Redis connection is healthy"""
     if not redis_client:
+        logger.info("Redis client not initialized")
         return False
     
     try:
         await redis_client.ping()
+        logger.info("Redis health check: CONNECTED")
         return True
     except Exception as e:
-        logger.error(f"Redis health check failed: {e}")
+        logger.warning(f"Redis health check: DISCONNECTED - {e}")
         return False
 
 # Rate limiting middleware class for more complex scenarios

@@ -27,6 +27,22 @@ app = FastAPI(
     version="1.0.0"
 )
 
+@app.on_event("startup")
+async def startup_event():
+    """Test connections and services on startup"""
+    from src.middlewares.rate_limit import check_redis_health
+    
+    print("🚀 Starting Jessy AI Backend...")
+    
+    # Test Redis connection
+    redis_connected = await check_redis_health()
+    if redis_connected:
+        print("✅ Redis: Connected and healthy")
+    else:
+        print("❌ Redis: Not connected (using in-memory rate limiting)")
+    
+    print("✅ Server startup complete!")
+
 # Add security middleware
 app.add_middleware(RequestIDMiddleware)
 
@@ -92,3 +108,4 @@ async def security_test(request: Request):
         "message": "This endpoint is rate limited to 2 requests per minute",
         "security": "Rate limiting is working!"
     }
+
