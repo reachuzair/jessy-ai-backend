@@ -24,3 +24,13 @@ class ResendOtpRequest(BaseModel):
 
 class PasswordResetRequest(BaseModel):
     email: EmailStr
+
+
+class ResetPasswordRequest(BaseModel):
+    email: EmailStr
+    otp: str
+    new_password: str
+
+
+class RevokeAllUserTokensRequest(BaseModel):
+    user_id: str

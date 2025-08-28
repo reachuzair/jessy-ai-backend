@@ -1,12 +1,14 @@
 from fastapi import APIRouter, Depends, Response, Request
 from sqlalchemy.ext.asyncio import AsyncSession
+
+
 from src.controllers.auth_controller import (
-    signup,
-    signin,
-    verify_email,
-    resend_email_verification_otp,
-    request_password_reset,
+    signup, signin, verify_email, resend_email_verification_otp, 
+    request_password_reset, reset_password, logout, revoke_all_user_tokens
 )
+
+
+
 from src.middlewares.rate_limit import auth_rate_limit, public_rate_limit
 from src.config.database import get_db
 from src.models.auth_models import (
@@ -15,6 +17,8 @@ from src.models.auth_models import (
     VerifyEmailRequest,
     ResendOtpRequest,
     PasswordResetRequest,
+    ResetPasswordRequest,
+    RevokeAllUserTokensRequest,
 )
 
 router = APIRouter()
@@ -54,3 +58,22 @@ async def resend_otp_endpoint(request: Request, body: ResendOtpRequest, db: Asyn
 @auth_rate_limit()
 async def password_reset_endpoint(request: Request, body: PasswordResetRequest, db: AsyncSession = Depends(get_db)):
     return await request_password_reset(body.email, db)
+
+
+@router.post("/reset-password")
+@auth_rate_limit()
+async def reset_password_endpoint(request: Request, body: ResetPasswordRequest, db: AsyncSession = Depends(get_db)):
+    return await reset_password(body.email, body.otp, body.new_password, db)
+
+
+@router.post("/logout")
+@auth_rate_limit()
+async def logout_endpoint(request: Request, response: Response, db: AsyncSession = Depends(get_db)):
+    return await logout(request, response, db)
+
+@router.post("/revoke-all-user-tokens/{user_id}")
+@auth_rate_limit()
+async def revoke_all_user_tokens_endpoint(request: Request, body: RevokeAllUserTokensRequest, db: AsyncSession = Depends(get_db)):
+    return await revoke_all_user_tokens(body.user_id, db)
+
+
