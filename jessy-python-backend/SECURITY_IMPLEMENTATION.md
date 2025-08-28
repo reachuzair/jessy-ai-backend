@@ -88,6 +88,7 @@ This document provides a comprehensive comparison of the security features that 
   - Development vs production mode detection
   - Centralized security settings management
 
+<<<<<<< HEAD
 ### 6. **Integrated Security Middleware Stack** ✅
 - **Location**: `src/app.py`
 - **Implementation**:
@@ -95,6 +96,17 @@ This document provides a comprehensive comparison of the security features that 
   - Exception handlers properly configured
   - Health check endpoints for security verification
   - Security test endpoints for validation
+=======
+### 5. Password and OTP Security
+- **Location**: `src/utils/security.py`
+- **Features**:
+  - Proper password hashing using bcrypt
+  - Secure OTP generation and hashing
+  - Salt-based hashing for enhanced security
+  - Constant-time comparison for hash verification
+
+## 🔧 Integration Changes
+>>>>>>> a16c22e0a74cb5100477db6d6b4c76311cc55c39
 
 ---
 
@@ -126,6 +138,7 @@ Create a `.env` file with:
 ENVIRONMENT=development
 DEBUG_MODE=true
 JWT_SECRET=your_super_secure_secret_here
+JWT_REFRESH_SECRET=your_separate_refresh_secret_here
 
 # CORS Configuration
 CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001
@@ -136,6 +149,16 @@ REDIS_URL=redis://localhost:6379
 
 # Database
 DATABASE_URL=postgresql+asyncpg://user:password@localhost/dbname
+
+# Email Configuration (for OTP verification)
+SMTP_SERVER=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=your_email@gmail.com
+SMTP_PASSWORD=your_app_password
+FROM_EMAIL=noreply@jessy-ai.com
+
+# OTP Configuration
+OTP_EXPIRATION_MINUTES=10
 ```
 
 ### **Install Dependencies**
@@ -161,6 +184,7 @@ pip install -r requirements.txt
 
 ## 📊 Rate Limiting Summary
 
+<<<<<<< HEAD
 | Endpoint Type | Rate Limit | Applied To | Security Level |
 |---------------|------------|------------|----------------|
 | **Authentication** | 5/minute | `/auth/signin`, `/auth/signup`, `/auth/request-password-reset` | 🔴 **High** |
@@ -210,26 +234,69 @@ pip install -r requirements.txt
 - [ ] Rate limiting per user (vs per IP)
 
 ---
+=======
+| Endpoint Type | Rate Limit | Applied To |
+|---------------|------------|------------|
+| Authentication | 5/minute | `/auth/signin`, `/auth/signup`, `/auth/request-password-reset` |
+| Email Verification | 3/minute | `/auth/verify-email`, `/auth/resend-email-verification-otp` |
+| Public | 100/minute | General public endpoints |
+| Voice Processing | 10/minute | Voice endpoints (when implemented) |
+| General API | 60/minute | Other API endpoints |
 
-## 🧪 Testing the Implementation
 
+## Additional Features Required (Milestone 1 Completion)
+
+### 1. Email Verification System
+- **Route**: `POST /auth/verify-email`
+- Build backend API for email verification
+- Implement proper OTP expiration (10 minutes)
+- Validate OTP format and user association
+- Update user verification status in database
+
+### 2. Email Verification OTP Resending
+- **Route**: `POST /auth/resend-email-verification-otp`
+- Build backend API for resending email verification OTP
+- Check if user exists and is not already verified
+- Generate new OTP and invalidate previous ones
+- Send email with new OTP
+>>>>>>> a16c22e0a74cb5100477db6d6b4c76311cc55c39
+
+### 3. Password Reset System
+- **Route**: `POST /auth/request-password-reset`
+- Build backend API for password reset
+- Generate secure password reset tokens
+- Send password reset email with token
+- Implement token expiration (10 minutes)
+
+<<<<<<< HEAD
 ### **Run the server and test:**
 ```bash
 # Start the server
 python run.py
+=======
+### 4. Refresh Token Security Improvements
+- Store refresh tokens safely in database with associations
+- Rotate refresh tokens when used (generate new on each refresh)
+- Use separate JWT secret for refresh tokens
+- Implement token versioning for global invalidation
+>>>>>>> a16c22e0a74cb5100477db6d6b4c76311cc55c39
 
-# Test health check
-curl http://localhost:8003/health
+### 5. Token Security Enhancements
+- Add a way to block old or unsafe tokens
+- Implement token blacklisting mechanism
+- Add user-initiated token revocation
+- Track token usage patterns
 
-# Test rate limiting (run multiple times quickly)
-curl http://localhost:8003/security-test
+## Security Benefits
 
-# Test auth rate limiting
-curl -X POST http://localhost:8003/auth/signup \
-  -H "Content-Type: application/json" \
-  -d '{"email": "test@example.com", "password": "password123"}'
-```
+**Core Security Features:**
+- DDoS Protection - Rate limiting prevents abuse
+- Information Disclosure Prevention - Consistent error responses
+- Cross-Origin Request Security - Properly configured CORS
+- Request Tracing - Request IDs for debugging
+- Environment-Based Security - Different configs for dev/prod
 
+<<<<<<< HEAD
 ### **Verify Security Features:**
 1. **Rate Limiting**: Make multiple requests quickly to see 429 responses
 2. **Error Handling**: Trigger errors to see consistent JSON responses
@@ -261,3 +328,11 @@ The security implementation has transformed the Jessy AI Backend from a **vulner
 - **Future-Ready**: Extensible middleware architecture
 
 This security foundation enables the application to be deployed in production environments while maintaining the flexibility needed for development and testing.
+=======
+**Authentication Security:**
+- Email Ownership Verification - Prevents account takeover with unverified emails
+- OTP Time-Based Security - 10-minute expiration prevents replay attacks
+- Secure Password Recovery - Token-based reset system prevents unauthorized access
+- Token Rotation Security - Fresh tokens on each use prevent token reuse attacks
+- Session Invalidation - Global logout capability for compromised accounts
+>>>>>>> a16c22e0a74cb5100477db6d6b4c76311cc55c39
